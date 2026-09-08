@@ -10,8 +10,8 @@ Included decks:
 - Special Operations — 44
 
 Not included:
-- Normal Procedure — source not uploaded yet
-- Adverse Weather — intentionally removed because the current extraction was not reliable enough
+- Normal Procedure 
+- Adverse Weather
 
 ## Publish with GitHub Pages
 1. Create a public repository, ideally `a320-night-study`.
