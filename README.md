@@ -9,5 +9,3 @@ Complete two-mode build.
 - Multiple-response questions support selecting several choices before checking.
 - OM-A Chapter 8 Q99 uses a dedicated matching interaction.
 - Quiz progress is saved in the browser with localStorage.
-
-For GitHub Pages, replace your repository's existing index.html with this file.
