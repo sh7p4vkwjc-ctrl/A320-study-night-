@@ -1,25 +1,13 @@
-# A320 Night Study
+# Athena A320 Study ✈️✨
 
-Current build: **306 cards**.
+Complete two-mode build.
 
-Included decks:
-- Abnormal Procedure — 24
-- ATA 20–27 — 76
-- ATA 28–70 — 133
-- Ops Specs – Performance – Limitation — 29
-- Special Operations — 44
+- Flashcards: 718 source-backed cards. Tap a flashcard to reveal/hide the answer.
+- Quiz: 718 source-backed quiz questions across all eight decks.
+- Quiz answer choices use exact crops of the original Athena source wording with the green/red result icons removed.
+- Correct answers move to Right; wrong answers move to Review.
+- Multiple-response questions support selecting several choices before checking.
+- OM-A Chapter 8 Q99 uses a dedicated matching interaction.
+- Quiz progress is saved in the browser with localStorage.
 
-Not included:
-- Normal Procedure 
-- Adverse Weather
-
-## Publish with GitHub Pages
-1. Create a public repository, ideally `a320-night-study`.
-2. Upload the contents of this ZIP to the repository root.
-3. Go to **Settings → Pages**.
-4. Under **Build and deployment**, choose **GitHub Actions**.
-5. Wait for the deployment workflow to finish.
-6. Open the resulting HTTPS URL in Safari on iPad.
-7. Safari → Share → **Add to Home Screen**.
-
-This build is self-contained in `index.html`, so there are no separate CSS/image folders to lose during upload.
+For GitHub Pages, replace your repository's existing index.html with this file.
