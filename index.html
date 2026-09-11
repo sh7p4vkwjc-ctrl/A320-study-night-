@@ -267,63 +267,6 @@ main.app.flashcardMode .studyView .card.revealed .body:after{
   .quizCard{padding:14px}
   .matchRow{grid-template-columns:1fr}
 }
-</style><style>
-/* ===== Source-structure lesson menus ===== */
-.courseMenuTitle{
-  margin:2px 0 12px;
-  padding:0 2px;
-  font-size:.78rem;
-  font-weight:900;
-  letter-spacing:.12em;
-  color:#79e8ff;
-}
-.courseMenuSub{
-  margin:15px 0 7px;
-  padding:0 2px;
-  font-size:.72rem;
-  font-weight:850;
-  letter-spacing:.12em;
-  text-transform:uppercase;
-  color:#8ea9c3;
-}
-.tabs,.quizDeckBar{
-  display:flex !important;
-  flex-direction:column;
-  gap:8px !important;
-  grid-template-columns:none !important;
-}
-.topicBtn,.quizDeckBtn{
-  width:100%;
-  min-height:58px;
-  display:grid;
-  grid-template-columns:1fr auto;
-  align-items:center;
-  gap:12px;
-  text-align:left;
-  border-radius:17px !important;
-  padding:12px 16px !important;
-}
-.topicBtn .lessonName,.quizDeckBtn .lessonName{
-  font-size:.98rem;
-  line-height:1.25;
-  font-weight:850;
-}
-.topicBtn small,.quizDeckBtn small{
-  display:block;
-  margin:0 !important;
-  white-space:nowrap;
-  font-size:.78rem;
-  color:#9eb4cb;
-}
-.topicBtn.active,.quizDeckBtn.active{
-  border-color:#72e6ff !important;
-  box-shadow:0 0 0 1px rgba(114,230,255,.12) inset;
-}
-@media(max-width:620px){
-  .topicBtn,.quizDeckBtn{min-height:54px;padding:11px 13px !important}
-  .topicBtn .lessonName,.quizDeckBtn .lessonName{font-size:.9rem}
-  .topicBtn small,.quizDeckBtn small{font-size:.72rem}
-}
 </style></head><body><section class="athenaLanding" id="athenaLanding">
 <div aria-hidden="true" class="landingSky">
 <div class="cloud c1"></div><div class="cloud c2"></div><div class="cloud c3"></div>
@@ -353,6 +296,7 @@ main.app.flashcardMode .studyView .card.revealed .body:after{
 <div class="sky"><div class="stars"></div>
 <svg class="plane p1" viewbox="0 0 220 80"><path d="M14 45 L74 39 L122 15 L138 17 L110 39 L184 34 L207 42 L184 48 L111 46 L137 68 L122 68 L75 48 L17 52 Z" fill="#dce8f5"></path><circle cx="206" cy="42" fill="#ff6c75" r="2.5"></circle></svg>
 <svg class="plane p2" viewbox="0 0 220 80"><path d="M14 45 L74 39 L122 15 L138 17 L110 39 L184 34 L207 42 L184 48 L111 46 L137 68 L122 68 L75 48 L17 52 Z" fill="#c9d9eb"></path></svg></div>
+
 <section class="quizMode" hidden="" id="quizMode">
 <div class="quizHeader">
 <button class="backHomeBtn" id="quizHome" type="button">← Home</button>
@@ -362,7 +306,7 @@ main.app.flashcardMode .studyView .card.revealed .body:after{
 </div>
 <button class="backHomeBtn" id="quizToFlash" type="button">Flashcards</button>
 </div>
-<div class="courseMenuTitle" id="quizCourseTitle">ATHENA QUESTION BANK · A320/321 · V1.0</div><div class="quizDeckBar" id="quizDeckBar"></div>
+<div class="quizDeckBar" id="quizDeckBar"></div>
 <div class="quizStatusBar">
 <button class="quizFolder active" data-folder="all" type="button">All <span id="quizAllCount">0</span></button>
 <button class="quizFolder" data-folder="right" type="button">✓ Right <span id="quizRightCount">0</span></button>
@@ -386,7 +330,7 @@ main.app.flashcardMode .studyView .card.revealed .body:after{
 </section><main class="app" hidden="">
 <div class="header"><button class="pill homePill" id="flashHome" type="button">← Home</button><div class="brand">Athena A320 Flashcards ✈️✨</div><div class="userBox"><button class="pill" id="loginBtn">Sign in</button></div></div>
 <div class="topPanel">
-<div class="courseMenuTitle" id="flashCourseTitle">ATHENA QUESTION BANK · A320/321 · V1.0</div><div class="tabs" id="topicTabs"></div>
+<div class="tabs" id="topicTabs"></div>
 <div class="toolbar">
 <button class="toolBtn active" data-mode="study">Flashcards</button>
 <button class="toolBtn" data-mode="facts">Info Summary ✨</button>
@@ -650,23 +594,11 @@ window.SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
     const c=counts(cards), rated=c.again+c.almost+c.got;
     document.getElementById("summary").innerHTML=`<div class="summary"><div class="metric"><div class="label">Overall rated</div><div class="big">${rated} / ${cards.length}</div>${bar(c,cards.length)}</div><div class="metric"><div class="label">Again / Almost / Got it</div><div class="big">${c.again} · ${c.almost} · ${c.got}</div></div></div>`;
   }
-
-  const sourceMenuLabels = {
-    "Abnormal Procedure":"Abnormal Procedure",
-    "ATA 20–27":"ATA 20–27",
-    "ATA 28–70":"ATA 28–70",
-    "A320 Performance":"A320 Performance",
-    "Special Operations":"Special Operations",
-    "Adverse Weather":"Adverse Weather",
-    "OM-A Chapter 8":"OM-A Chapter 8",
-    "OM-A Remaining Chapters":"OM-A Remaining Chapters"
-  };
-
   function renderTabs(){
     const root=document.getElementById("topicTabs"); root.innerHTML="";
-    topicInfo.forEach((t,idx)=>{
+    topicInfo.forEach(t=>{
       const b=document.createElement("button"); b.className="topicBtn"+(t.name===state.topic?" active":"");
-      b.innerHTML=`<span class="lessonName">${sourceMenuLabels[t.name]||t.name}</span><small>${t.count} cards</small>`;
+      b.innerHTML=`${t.name}<small>${t.count} cards</small>`;
       b.onclick=()=>{state.topic=t.name;state.mode="study";render();};
       root.appendChild(b);
     });
@@ -856,12 +788,12 @@ window.SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
   }
   function renderDeckButtons() {
     deckBar.innerHTML = '';
-    deckOrder.forEach((slug,idx) => {
+    deckOrder.forEach(slug => {
       const d = quizData[slug];
       const b = document.createElement('button');
       b.type = 'button';
       b.className = 'quizDeckBtn' + (slug === activeDeck ? ' active' : '');
-      b.innerHTML = `<span class="lessonName">${d.title}</span><small>${d.questions.length} questions</small>`;
+      b.innerHTML = `${d.title} <span>${d.questions.length}</span>`;
       b.addEventListener('click', () => {
         activeDeck = slug; folder = 'all'; index = 0;
         document.querySelectorAll('.quizFolder').forEach(x => x.classList.toggle('active', x.dataset.folder === 'all'));
