@@ -295,13 +295,13 @@ main.app.flashcardMode .studyView .card.revealed .body:after{
   text-transform:uppercase;
   color:#8ea9c3;
 }
-.tabs,.quizDeckBar{
+.tabs{
   display:flex !important;
   flex-direction:column;
   gap:8px !important;
   grid-template-columns:none !important;
 }
-.topicBtn,.quizDeckBtn{
+.topicBtn{
   width:100%;
   min-height:58px;
   display:grid;
@@ -312,27 +312,28 @@ main.app.flashcardMode .studyView .card.revealed .body:after{
   border-radius:17px !important;
   padding:12px 16px !important;
 }
-.topicBtn .lessonName,.quizDeckBtn .lessonName{
+.topicBtn .lessonName{
   font-size:.98rem;
   line-height:1.25;
   font-weight:850;
 }
-.topicBtn small,.quizDeckBtn small{
+.topicBtn small{
   display:block;
   margin:0 !important;
   white-space:nowrap;
   font-size:.78rem;
   color:#9eb4cb;
 }
-.topicBtn.active,.quizDeckBtn.active{
+.topicBtn.active{
   border-color:#72e6ff !important;
   box-shadow:0 0 0 1px rgba(114,230,255,.12) inset;
 }
 @media(max-width:620px){
-  .topicBtn,.quizDeckBtn{min-height:54px;padding:11px 13px !important}
-  .topicBtn .lessonName,.quizDeckBtn .lessonName{font-size:.9rem}
-  .topicBtn small,.quizDeckBtn small{font-size:.72rem}
+  .topicBtn{min-height:54px;padding:11px 13px !important}
+  .topicBtn .lessonName{font-size:.9rem}
+  .topicBtn small{font-size:.72rem}
 }
+#quizCourseTitle{display:none}
 </style></head><body><section class="athenaLanding" id="athenaLanding">
 <div aria-hidden="true" class="landingSky">
 <div class="cloud c1"></div><div class="cloud c2"></div><div class="cloud c3"></div>
@@ -888,7 +889,7 @@ window.SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
       const b = document.createElement('button');
       b.type = 'button';
       b.className = 'quizDeckBtn' + (slug === activeDeck ? ' active' : '');
-      b.innerHTML = `<span class="lessonName">${d.title}</span><small>${d.questions.length} questions</small>`;
+      b.innerHTML = `${d.title} <span>${d.questions.length}</span>`;
       b.addEventListener('click', () => {
         activeDeck = slug; folder = 'all'; index = 0;
         document.querySelectorAll('.quizFolder').forEach(x => x.classList.toggle('active', x.dataset.folder === 'all'));
