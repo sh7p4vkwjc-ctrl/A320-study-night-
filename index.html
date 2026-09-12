@@ -360,6 +360,9 @@ main.app.flashcardMode .studyView .card.revealed .body:after{
 <button class="quizFolder active" data-folder="all" type="button">All <span id="quizAllCount">0</span></button>
 <button class="quizFolder" data-folder="right" type="button">✓ Right <span id="quizRightCount">0</span></button>
 <button class="quizFolder" data-folder="review" type="button">↻ Review <span id="quizReviewCount">0</span></button>
+<button class="quizFolder" data-folder="again" type="button" aria-label="Again questions">😵 <span id="quizAgainCount">0</span></button>
+<button class="quizFolder" data-folder="almost" type="button" aria-label="Almost questions">🤔 <span id="quizAlmostCount">0</span></button>
+<button class="quizFolder" data-folder="got" type="button" aria-label="Got it questions">😎 <span id="quizGotCount">0</span></button>
 </div>
 <div class="quizNotice">
     Original Athena question and answer wording, transcribed as tappable text. Genuine diagrams are kept only where the figure is part of the question.
@@ -1574,7 +1577,8 @@ window.SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
       btn.setAttribute('aria-pressed', String(active));
       btn.onclick = q ? () => {
         window.a320FlashRatings?.toggle(flashRatingKey(q),btn.dataset.rating);
-        renderQuizRating(q);
+        if(folder === 'again' || folder === 'almost' || folder === 'got') renderQuiz();
+        else { renderQuizRating(q); updateCounts(); }
       } : null;
     });
   }
@@ -1583,15 +1587,24 @@ window.SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
     const qs = currentQuestions();
     if (folder === 'right') return qs.filter(q => state[key(q)] === 'right');
     if (folder === 'review') return qs.filter(q => state[key(q)] === 'review');
+    if (folder === 'again' || folder === 'almost' || folder === 'got') {
+      return qs.filter(q => window.a320FlashRatings?.get(flashRatingKey(q)) === folder);
+    }
     return qs;
   }
   function updateCounts() {
     const qs = currentQuestions();
     const right = qs.filter(q => state[key(q)] === 'right').length;
     const review = qs.filter(q => state[key(q)] === 'review').length;
+    const again = qs.filter(q => window.a320FlashRatings?.get(flashRatingKey(q)) === 'again').length;
+    const almost = qs.filter(q => window.a320FlashRatings?.get(flashRatingKey(q)) === 'almost').length;
+    const got = qs.filter(q => window.a320FlashRatings?.get(flashRatingKey(q)) === 'got').length;
     document.getElementById('quizAllCount').textContent = qs.length;
     document.getElementById('quizRightCount').textContent = right;
     document.getElementById('quizReviewCount').textContent = review;
+    document.getElementById('quizAgainCount').textContent = again;
+    document.getElementById('quizAlmostCount').textContent = almost;
+    document.getElementById('quizGotCount').textContent = got;
   }
   function renderDeckButtons() {
     deckBar.innerHTML = '';
@@ -1649,6 +1662,9 @@ window.SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
       qNum.textContent=''; qType.textContent='';
       qQuestion.innerHTML = folder==='review' ? '<div class="quizEmpty">Nothing in Review 🎉</div>' :
                             folder==='right' ? '<div class="quizEmpty">No questions in Right yet.</div>' :
+                            folder==='again' ? '<div class="quizEmpty">No 😵 Again questions here.</div>' :
+                            folder==='almost' ? '<div class="quizEmpty">No 🤔 Almost questions here.</div>' :
+                            folder==='got' ? '<div class="quizEmpty">No 😎 Got it questions here.</div>' :
                             '<div class="quizEmpty">No questions here.</div>';
       prev.disabled=true; next.disabled=true; return;
     }
