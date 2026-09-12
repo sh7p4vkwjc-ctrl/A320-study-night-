@@ -193,10 +193,11 @@ main.app.flashcardMode .studyView .card.revealed .body:after{
 .quizChoice:disabled{opacity:.95}
 .quizFeedback{min-height:28px;margin-top:13px;font-weight:800}
 .quizFeedback.good{color:#88e4a6}.quizFeedback.bad{color:#ff9dac}
-.quizEmojiBar{display:flex;justify-content:center;gap:16px;margin-top:8px;padding:8px 10px 2px}
+.quizEmojiBar{position:relative;z-index:5;display:flex;justify-content:center;gap:16px;margin-top:8px;padding:8px 10px 2px;pointer-events:auto}
 .quizEmoji{
   width:66px;height:54px;border:0;border-radius:18px;padding:0;background:transparent;
-  color:inherit;font-size:2rem;line-height:1;cursor:pointer
+  color:inherit;font-size:2rem;line-height:1;cursor:pointer;pointer-events:auto;touch-action:manipulation;
+  -webkit-tap-highlight-color:transparent
 }
 .quizEmoji.active[data-rating="again"]{background:radial-gradient(circle,rgba(255,125,141,.18),transparent 68%)}
 .quizEmoji.active[data-rating="almost"]{background:radial-gradient(circle,rgba(255,209,102,.18),transparent 68%)}
@@ -1004,8 +1005,8 @@ window.SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
     const k=key(q), rating=btn.dataset.rating;
     if(quizRatings[k]===rating) delete quizRatings[k];
     else quizRatings[k]=rating;
-    localStorage.setItem(RATING_STORE,JSON.stringify(quizRatings));
     renderQuizRating(q);
+    try { localStorage.setItem(RATING_STORE,JSON.stringify(quizRatings)); } catch (_) {}
   }));
   prev.addEventListener('click',()=>{index=Math.max(0,index-1);renderQuiz();});
   next.addEventListener('click',()=>{index++;renderQuiz();});
