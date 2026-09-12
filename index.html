@@ -199,9 +199,10 @@ main.app.flashcardMode .studyView .card.revealed .body:after{
   color:inherit;font-size:2rem;line-height:1;cursor:pointer;pointer-events:auto;touch-action:manipulation;
   -webkit-tap-highlight-color:transparent
 }
-.quizEmoji.active[data-rating="again"]{background:radial-gradient(circle,rgba(255,125,141,.18),transparent 68%)}
-.quizEmoji.active[data-rating="almost"]{background:radial-gradient(circle,rgba(255,209,102,.18),transparent 68%)}
-.quizEmoji.active[data-rating="got"]{background:radial-gradient(circle,rgba(126,224,161,.18),transparent 68%)}
+.quizEmoji.active{transform:scale(1.08);border:1px solid currentColor}
+.quizEmoji.active[data-rating="again"]{color:var(--red);background:rgba(255,125,141,.16);box-shadow:0 0 18px rgba(255,125,141,.22)}
+.quizEmoji.active[data-rating="almost"]{color:var(--yellow);background:rgba(255,209,102,.15);box-shadow:0 0 18px rgba(255,209,102,.20)}
+.quizEmoji.active[data-rating="got"]{color:var(--green);background:rgba(126,224,161,.15);box-shadow:0 0 18px rgba(126,224,161,.20)}
 .quizEmoji:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
 .quizActions{display:flex;justify-content:space-between;gap:10px;margin-top:18px}
 .quizActions button:disabled{opacity:.35}
@@ -297,44 +298,25 @@ main.app.flashcardMode .studyView .card.revealed .body:after{
   color:#8ea9c3;
 }
 .tabs{
-  display:flex !important;
-  flex-direction:column;
+  display:grid !important;
+  grid-template-columns:repeat(4,minmax(0,1fr)) !important;
   gap:8px !important;
-  grid-template-columns:none !important;
 }
 .topicBtn{
   width:100%;
-  min-height:58px;
-  display:grid;
-  grid-template-columns:1fr auto;
-  align-items:center;
-  gap:12px;
-  text-align:left;
-  border-radius:17px !important;
-  padding:12px 16px !important;
-}
-.topicBtn .lessonName{
-  font-size:.98rem;
-  line-height:1.25;
-  font-weight:850;
-}
-.topicBtn small{
-  display:block;
-  margin:0 !important;
-  white-space:nowrap;
-  font-size:.78rem;
-  color:#9eb4cb;
+  min-height:54px;
+  text-align:center;
+  white-space:normal;
+  line-height:1.2;
+  border-radius:15px !important;
+  padding:8px !important;
 }
 .topicBtn.active{
   border-color:#72e6ff !important;
   box-shadow:0 0 0 1px rgba(114,230,255,.12) inset;
 }
-@media(max-width:620px){
-  .topicBtn{min-height:54px;padding:11px 13px !important}
-  .topicBtn .lessonName{font-size:.9rem}
-  .topicBtn small{font-size:.72rem}
-}
-#quizCourseTitle{display:none}
+@media(max-width:760px){.tabs{grid-template-columns:repeat(2,minmax(0,1fr)) !important}}
+#quizCourseTitle,#flashCourseTitle{display:none}
 </style></head><body><section class="athenaLanding" id="athenaLanding">
 <div aria-hidden="true" class="landingSky">
 <div class="cloud c1"></div><div class="cloud c2"></div><div class="cloud c3"></div>
@@ -654,7 +636,7 @@ window.SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
   }));
   state.topic=topicInfo[0]?.name||null;
 
-  function saveLocal(){ localStorage.setItem(localKey,JSON.stringify(state.ratings)); }
+  function saveLocal(){ try { localStorage.setItem(localKey,JSON.stringify(state.ratings)); } catch (_) {} }
   function counts(cards){
     const c={again:0,almost:0,got:0};
     cards.forEach(card=>{const s=state.ratings[card.dataset.key]; if(s)c[s]++});
@@ -682,7 +664,7 @@ window.SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
     const root=document.getElementById("topicTabs"); root.innerHTML="";
     topicInfo.forEach((t,idx)=>{
       const b=document.createElement("button"); b.className="topicBtn"+(t.name===state.topic?" active":"");
-      b.innerHTML=`<span class="lessonName">${sourceMenuLabels[t.name]||t.name}</span><small>${t.count} cards</small>`;
+      b.innerHTML=`${sourceMenuLabels[t.name]||t.name} <span>${t.count}</span>`;
       b.onclick=()=>{state.topic=t.name;state.mode="study";render();};
       root.appendChild(b);
     });
@@ -701,10 +683,22 @@ window.SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
       await state.supabase.from("progress").upsert({user_id:state.user.id,card_key:cardKey,rating,updated_at:new Date().toISOString()},{onConflict:"user_id,card_key"});
     }
   }
+  function toggleRating(cardKey,rating){
+    state.ratings[cardKey]=state.ratings[cardKey]===rating?"":rating;
+    if(!state.ratings[cardKey])delete state.ratings[cardKey];
+    saveLocal();applyRatings();renderSummary();
+    if(state.mode==="review")renderReview();
+    if(state.mode==="progress")renderProgress();
+    pushOne(cardKey,state.ratings[cardKey]||null);
+    return state.ratings[cardKey]||"";
+  }
+  window.a320FlashRatings={
+    get:cardKey=>state.ratings[cardKey]||"",
+    toggle:toggleRating
+  };
   document.querySelectorAll(".emoji").forEach(b=>b.addEventListener("click",async()=>{
     const card=b.closest(".card"),k=card.dataset.key,v=b.dataset.type;
-    state.ratings[k]=state.ratings[k]===v?"":v; if(!state.ratings[k])delete state.ratings[k];
-    saveLocal(); applyRatings(); renderSummary(); await pushOne(k,state.ratings[k]||null);
+    toggleRating(k,v);
   }));
 
   function renderReview(){
@@ -716,8 +710,7 @@ window.SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
     panel.innerHTML=html;
     panel.querySelectorAll(".emoji").forEach(b=>b.onclick=async()=>{
       const card=b.closest(".card"),k=card.dataset.key,v=b.dataset.type;
-      state.ratings[k]=state.ratings[k]===v?"":v;if(!state.ratings[k])delete state.ratings[k];
-      saveLocal();await pushOne(k,state.ratings[k]||null);render();
+      toggleRating(k,v);render();
     });
   }
   function renderProgress(){
@@ -1511,12 +1504,14 @@ window.SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
 {"qnum":102,"question":"The Pilot in Command may delegate the conduct of a flight to a relief pilot, but he remains the PIC the flight from commencement until the end of duty.","options":["TRUE","FALSE"],"correct":[0],"multi":false,"key":"omarem__102"}],"count":102}};
   const deckOrder = ["abnormal", "ata20", "ata28", "performance", "special", "adverse", "oma8", "omarem"];
   const STORE = 'athenaA320TextQuizV3';
-  const RATING_STORE = 'athenaA320QuizRatingsV1';
+  const flashTopicByDeck = {
+    abnormal:'Abnormal Procedure', ata20:'ATA 20–27', ata28:'ATA 28–70',
+    performance:'A320 Performance', special:'Special Operations', adverse:'Adverse Weather',
+    oma8:'OM-A Chapter 8', omarem:'OM-A Remaining Chapters'
+  };
 
   let state = {};
   try { state = JSON.parse(localStorage.getItem(STORE) || '{}') || {}; } catch (_) { state = {}; }
-  let quizRatings = {};
-  try { quizRatings = JSON.parse(localStorage.getItem(RATING_STORE) || '{}') || {}; } catch (_) { quizRatings = {}; }
 
   let activeDeck = deckOrder[0];
   let folder = 'all';
@@ -1569,13 +1564,18 @@ window.SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
     updateCounts();
   }
   function key(q) { return `${activeDeck}__${q.qnum}`; }
+  function flashRatingKey(q) { return `${flashTopicByDeck[activeDeck]}__${q.qnum}`; }
   function renderQuizRating(q) {
     quizEmojiBar.hidden = !q;
-    const selected = q ? quizRatings[key(q)] : '';
+    const selected = q ? (window.a320FlashRatings?.get(flashRatingKey(q)) || '') : '';
     quizEmojiBar.querySelectorAll('.quizEmoji').forEach(btn => {
       const active = btn.dataset.rating === selected;
       btn.classList.toggle('active', active);
       btn.setAttribute('aria-pressed', String(active));
+      btn.onclick = q ? () => {
+        window.a320FlashRatings?.toggle(flashRatingKey(q),btn.dataset.rating);
+        renderQuizRating(q);
+      } : null;
     });
   }
   function currentQuestions() { return quizData[activeDeck].questions; }
@@ -1708,15 +1708,6 @@ window.SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
   document.querySelectorAll('.quizFolder').forEach(btn=>btn.addEventListener('click',()=>{
     document.querySelectorAll('.quizFolder').forEach(x=>x.classList.remove('active'));
     btn.classList.add('active'); folder=btn.dataset.folder; index=0; renderQuiz();
-  }));
-  quizEmojiBar.querySelectorAll('.quizEmoji').forEach(btn=>btn.addEventListener('click',()=>{
-    const q=listForFolder()[index];
-    if(!q)return;
-    const k=key(q), rating=btn.dataset.rating;
-    if(quizRatings[k]===rating) delete quizRatings[k];
-    else quizRatings[k]=rating;
-    renderQuizRating(q);
-    try { localStorage.setItem(RATING_STORE,JSON.stringify(quizRatings)); } catch (_) {}
   }));
   prev.addEventListener('click',()=>{index=Math.max(0,index-1);renderQuiz();});
   next.addEventListener('click',()=>{index++;renderQuiz();});
