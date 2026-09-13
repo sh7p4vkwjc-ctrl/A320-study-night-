@@ -300,6 +300,18 @@ main.app.flashcardMode .studyView .card.revealed .body:after{
   grid-column:1/-1;
 }
 .courseMenuSub:first-child{margin-top:0;}
+.courseMenuChildren{
+  grid-column:1/-1;
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:8px;
+  padding:10px;
+  border:1px solid #25435f;
+  border-radius:15px;
+  background:rgba(9,29,49,.55);
+}
+.courseMenuChildren[hidden]{display:none;}
+.courseMenuMissing{opacity:.5;cursor:default;}
 .tabs{
   display:grid !important;
   grid-template-columns:repeat(4,minmax(0,1fr)) !important;
@@ -633,25 +645,75 @@ window.SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
 // One topic order and heading set for both study modes. Topic names are also
 // saved-progress identifiers, so presentation changes must not rename them.
 window.studyMenu = {
+  labels:{
+    "ATA 20–27":"Aircraft Systems – ATA 20 to 27",
+    "ATA 28–70":"Aircraft Systems – ATA 28 to 70",
+    "A320 Performance":"Ops Specs – Performance – Limitation"
+  },
   groups: [
-    {title:"A320 · Type Rating", topics:[
+    {title:"A320 · Type Rating", entries:[
+      {name:"Normal Procedure",missing:true},
       "Abnormal Procedure", "ATA 20–27", "ATA 28–70", "A320 Performance",
-      "Special Operations", "Adverse Weather", "OM-A Chapter 8", "OM-A Remaining Chapters"
+      "Special Operations", "Adverse Weather",
+      {label:"VietJet OM",id:"vietjet-om",topics:["OM-A Chapter 8", "OM-A Remaining Chapters"]}
     ]},
-    {title:"ATPL · Aircraft & Principles", topics:[
+    {title:"ATPL · Aircraft & Principles", entries:[
       "Aircraft General Knowledge", "Principles of Flight", "Powerplant",
       "Electrical", "Instrumentation"
     ]},
-    {title:"ATPL · Flight Operations", topics:[
+    {title:"ATPL · Flight Operations", entries:[
       "Air Law", "Operational Procedures", "Communication", "Meteorology",
       "Mass and Balance", "ATPL Performance", "Human Performance"
     ]}
   ]
 };
-window.studyMenu.topics = window.studyMenu.groups.flatMap(group => group.topics);
-window.studyMenu.headings = Object.fromEntries(
-  window.studyMenu.groups.map(group => [group.topics[0], group.title])
+window.studyMenu.topics = window.studyMenu.groups.flatMap(group =>
+  group.entries.flatMap(entry => typeof entry === "string" ? [entry] : entry.topics || [])
 );
+window.studyMenu.render = function(root,activeTopic,counts,onSelect,buttonClass){
+  root.innerHTML="";
+  function topicButton(name){
+    const b=document.createElement("button");
+    b.type="button";
+    b.className=buttonClass+(name===activeTopic?" active":"");
+    b.setAttribute("aria-pressed",String(name===activeTopic));
+    b.innerHTML=`${window.studyMenu.labels[name]||name} <span>${counts[name]}</span>`;
+    b.onclick=()=>onSelect(name);
+    return b;
+  }
+  window.studyMenu.groups.forEach(group=>{
+    const h=document.createElement("div");
+    h.className="courseMenuSub";h.textContent=group.title;root.appendChild(h);
+    const submenus=[];
+    group.entries.forEach(entry=>{
+      if(typeof entry==="string"){
+        root.appendChild(topicButton(entry));
+      }else if(entry.missing){
+        const b=document.createElement("button");
+        b.type="button";b.className=buttonClass+" courseMenuMissing";b.disabled=true;
+        b.innerHTML=`${entry.name} <span>Not added</span>`;
+        b.title="Normal Procedure questions have not been added yet.";
+        root.appendChild(b);
+      }else{
+        const selected=entry.topics.includes(activeTopic);
+        const submenuId=`${root.id}-${entry.id}`;
+        const b=document.createElement("button");
+        b.type="button";b.className=buttonClass+(selected?" active":"");
+        b.innerHTML=`${entry.label} <span>${entry.topics.reduce((n,name)=>n+counts[name],0)}</span>`;
+        b.setAttribute("aria-expanded",String(selected));
+        b.setAttribute("aria-controls",submenuId);
+        b.onclick=()=>onSelect(selected?activeTopic:entry.topics[0]);
+        root.appendChild(b);
+        const submenu=document.createElement("div");
+        submenu.id=submenuId;submenu.className="courseMenuChildren";submenu.hidden=!selected;
+        submenu.setAttribute("role","group");submenu.setAttribute("aria-label",entry.label+" sections");
+        entry.topics.forEach(name=>submenu.appendChild(topicButton(name)));
+        submenus.push(submenu);
+      }
+    });
+    submenus.forEach(submenu=>root.appendChild(submenu));
+  });
+};
 </script>
 <script>
 (() => {
@@ -679,40 +741,10 @@ window.studyMenu.headings = Object.fromEntries(
     document.getElementById("summary").innerHTML=`<div class="summary"><div class="metric"><div class="label">Overall rated</div><div class="big">${rated} / ${cards.length}</div>${bar(c,cards.length)}</div><div class="metric"><div class="label">Again / Almost / Got it</div><div class="big">${c.again} · ${c.almost} · ${c.got}</div></div></div>`;
   }
 
-  const sourceMenuLabels = {
-    "Abnormal Procedure":"Abnormal Procedure",
-    "ATA 20–27":"ATA 20–27",
-    "ATA 28–70":"ATA 28–70",
-    "A320 Performance":"A320 Performance",
-    "Special Operations":"Special Operations",
-    "Adverse Weather":"Adverse Weather",
-    "OM-A Chapter 8":"OM-A Chapter 8",
-    "OM-A Remaining Chapters":"OM-A Remaining Chapters",
-    "Air Law":"Air Law",
-    "Aircraft General Knowledge":"Aircraft General Knowledge",
-    "Principles of Flight":"Principles of Flight",
-    "Instrumentation":"Instrumentation",
-    "Powerplant":"Powerplant",
-    "Electrical":"Electrical",
-    "Mass and Balance":"Mass and Balance",
-    "Communication":"Communication",
-    "Operational Procedures":"Operational Procedures",
-    "Meteorology":"Meteorology",
-    "ATPL Performance":"ATPL Performance",
-    "Human Performance":"Human Performance"
-  };
-
   function renderTabs(){
-    const root=document.getElementById("topicTabs"); root.innerHTML="";
-    topicInfo.forEach(t=>{
-      const heading=window.studyMenu.headings[t.name];
-      if(heading){const h=document.createElement("div");h.className="courseMenuSub";h.textContent=heading;root.appendChild(h);}
-      const b=document.createElement("button"); b.className="topicBtn"+(t.name===state.topic?" active":"");
-      b.type="button";
-      b.innerHTML=`${sourceMenuLabels[t.name]||t.name} <span>${t.count}</span>`;
-      b.onclick=()=>{state.topic=t.name;state.mode="study";render();};
-      root.appendChild(b);
-    });
+    window.studyMenu.render(document.getElementById("topicTabs"),state.topic,
+      Object.fromEntries(topicInfo.map(t=>[t.name,t.count])),
+      name=>{state.topic=name;state.mode="study";render();},"topicBtn");
   }
   function applyRatings(){
     document.querySelectorAll(".card").forEach(card=>{
@@ -946,22 +978,13 @@ window.studyMenu.headings = Object.fromEntries(
     document.getElementById('quizGotCount').textContent = got;
   }
   function renderDeckButtons() {
-    deckBar.innerHTML = '';
-    deckOrder.forEach(slug => {
-      const d = quizData[slug];
-      const heading = window.studyMenu.headings[d.title];
-      if(heading){const h=document.createElement("div");h.className="courseMenuSub";h.textContent=heading;deckBar.appendChild(h);}
-      const b = document.createElement('button');
-      b.type = 'button';
-      b.className = 'quizDeckBtn' + (slug === activeDeck ? ' active' : '');
-      b.innerHTML = `${d.title} <span>${d.questions.length}</span>`;
-      b.addEventListener('click', () => {
-        activeDeck = slug; folder = 'all'; index = 0;
+    window.studyMenu.render(deckBar,quizData[activeDeck].title,
+      Object.fromEntries(deckOrder.map(slug=>[quizData[slug].title,quizData[slug].questions.length])),
+      name=>{
+        activeDeck = deckOrder.find(slug=>quizData[slug].title===name); folder = 'all'; index = 0;
         document.querySelectorAll('.quizFolder').forEach(x => x.classList.toggle('active', x.dataset.folder === 'all'));
         renderDeckButtons(); renderQuiz();
-      });
-      deckBar.appendChild(b);
-    });
+      },"quizDeckBtn");
   }
   function result(q, ok) {
     state[key(q)] = ok ? 'right' : 'review';
