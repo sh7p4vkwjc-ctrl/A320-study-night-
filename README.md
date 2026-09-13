@@ -2,7 +2,7 @@
 
 A personal aviation revision app with a cockpit-at-night theme, tappable flashcards, interactive quizzes, and emoji-based confidence tracking. The app lives in one file: `index.html`.
 
-This README describes the version updated on 13 September 2026: **1,184 flashcards, 1,184 quiz questions, and 20 populated topic sets**. Normal Procedure is a visible placeholder, not an additional question set.
+This README describes the version updated on 13 September 2026: **1,386 flashcards, 1,386 quiz questions, and 21 populated topic sets**. Normal Procedure is now included as the first topic in both study modes.
 
 ## Getting started
 
@@ -15,13 +15,13 @@ No installation, build step, or account is required for local study. Use the sam
 
 ## Topics and coverage
 
-### A320 · Type Rating — 718 questions
+### A320 · Type Rating — 920 questions
 
 The main menu follows the order of the supplied CAE Pelesys Athena course screenshot.
 
 | Menu item | Questions |
 | --- | ---: |
-| Normal Procedure | Not added |
+| Normal Procedure | 202 |
 | Abnormal Procedure | 24 |
 | Aircraft Systems – ATA 20 to 27 | 76 |
 | Aircraft Systems – ATA 28 to 70 | 133 |
@@ -30,7 +30,9 @@ The main menu follows the order of the supplied CAE Pelesys Athena course screen
 | Adverse Weather | 173 |
 | VietJet OM | 239 |
 
-VietJet OM contains **137 Chapter 8 questions** and **102 Remaining Chapters questions**, imported from the two separately supplied VietJet OM-A PDFs. The parent button shows their combined count; questions and progress remain separate within each section. These sections are not substitutes for Normal Procedure.
+Normal Procedure contains all **202 source-numbered questions** from the supplied PDF: 188 multiple-choice questions and 14 multiple-response questions. Questions 183 and 191 include the source circling-approach chart.
+
+VietJet OM contains **137 Chapter 8 questions** and **102 Remaining Chapters questions**, imported from the two separately supplied VietJet OM-A PDFs. The parent button shows their combined count; questions and progress remain separate within each section.
 
 ### ATPL · Aircraft & Principles — 129 questions
 
@@ -117,13 +119,13 @@ Cloud integration currently covers confidence ratings only, not quiz Right/Revie
 
 ## Content and source images
 
-Questions and answers were imported from the supplied Athena and ATPL source material. Relevant source diagrams are embedded where included, including the Meteorology SIGWX chart. The original PDFs are not needed to display those embedded images.
+Questions and answers were imported from the supplied Athena and ATPL source material. Relevant source diagrams are embedded where included, including the Meteorology SIGWX chart and the Normal Procedure TERPS circling-approach chart. The original PDFs are not needed to display those embedded images.
 
 Transcription and the source answer keys can contain errors. This is a personal revision aid, not an official CAE, airline, or regulatory product, and not an operational reference. Check doubtful answers against the original source and current approved training or operating documentation.
 
 ## Maintaining the app
 
-The HTML contains the inline CSS, flashcard markup, revision summaries, quiz dataset, and application scripts. `window.studyMenu` defines the shared menu order, display labels, Normal Procedure placeholder, and VietJet OM nesting.
+The HTML contains the inline CSS, flashcard markup, revision summaries, quiz dataset, and application scripts. `window.studyMenu` defines the shared menu order, display labels, and VietJet OM nesting.
 
 Keep saved-progress identifiers stable when changing presentation:
 
@@ -133,4 +135,4 @@ Keep saved-progress identifiers stable when changing presentation:
 
 For example, the menu now displays **Ops Specs – Performance – Limitation**, but its internal topic remains `A320 Performance` and its quiz slug remains `performance`. Renaming those internal identifiers would disconnect existing saved progress.
 
-When adding material, update the flashcards, Info Summary, quiz data, menu configuration, and topic mapping together. Only enable Normal Procedure once its actual questions are added. Recheck counts, answer keys, diagrams, topic selection, and confidence filters in both modes after changes.
+When adding material, update the flashcards, Info Summary, quiz data, menu configuration, and topic mapping together. Normal Procedure uses the internal topic name `Normal Procedure` and quiz slug `normal`; keep these stable too. Recheck counts, answer keys, diagrams, topic selection, and confidence filters in both modes after changes.
